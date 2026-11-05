@@ -202,8 +202,8 @@ img {
 
 h2 {
   margin-bottom: 18px;
-  font-size: clamp(30px, 4.6vw, 58px);
-  font-weight: 800;
+  font-size: clamp(28px, 3.6vw, 46px);
+  font-weight: 700;
   line-height: 1.16;
   text-wrap: balance;
 }
@@ -332,7 +332,7 @@ h4 {
   flex-shrink: 0;
   align-items: center;
   gap: 8px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 .brandDot {
@@ -455,9 +455,9 @@ h4 {
 .heroTitle {
   max-width: 1100px;
   margin: 0 0 28px;
-  font-size: clamp(40px, 7.2vw, 100px);
-  font-weight: 800;
-  line-height: 1.1;
+  font-size: clamp(34px, 5.2vw, 70px);
+  font-weight: 650;
+  line-height: 1.2;
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
@@ -506,8 +506,8 @@ h4 {
 }
 .statValue {
   color: var(--ink);
-  font-size: clamp(28px, 3.2vw, 42px);
-  font-weight: 700;
+  font-size: clamp(26px, 2.6vw, 36px);
+  font-weight: 600;
   line-height: 1.1;
 }
 .statLabel {
@@ -584,8 +584,8 @@ h4 {
 }
 .cardTitle {
   margin-bottom: 6px;
-  font-size: clamp(28px, 3.2vw, 44px);
-  font-weight: 700;
+  font-size: clamp(26px, 2.8vw, 38px);
+  font-weight: 600;
   line-height: 1.1;
 }
 .cardTagline {
@@ -600,8 +600,8 @@ h4 {
 }
 .headlineMetric strong {
   color: var(--rose);
-  font-size: clamp(28px, 3.4vw, 46px);
-  font-weight: 700;
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 600;
   line-height: 1.1;
 }
 .headlineMetric span {
@@ -634,7 +634,7 @@ h4 {
 .mediaPlaceholder .display {
   color: rgba(21, 19, 26, 0.7);
   font-size: clamp(30px, 4vw, 48px);
-  font-weight: 700;
+  font-weight: 600;
 }
 .detailToggle {
   display: inline-flex;
@@ -1013,8 +1013,8 @@ h4 {
 }
 .tilMessage {
   margin-bottom: 10px;
-  font-size: clamp(26px, 3vw, 38px);
-  font-weight: 800;
+  font-size: clamp(24px, 2.6vw, 32px);
+  font-weight: 700;
   line-height: 1.25;
 }
 .tilSub {
@@ -1137,7 +1137,7 @@ h4 {
   background: var(--white);
   font-family: var(--font-display-stack);
   font-size: clamp(17px, 2vw, 24px);
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
 }
 .marqueeItem:nth-child(3n) {

@@ -97,7 +97,7 @@ export default function Hero() {
             GitHub <span aria-hidden>↗</span>
           </a>
           <a className="button ghost" href={profile.tilNotion} target="_blank" rel="noreferrer">
-            매일 쓴 TIL <span aria-hidden>↗</span>
+            TIL 49편 <span aria-hidden>↗</span>
           </a>
         </motion.div>
 

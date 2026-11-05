@@ -15,7 +15,7 @@ const pretendard = localFont({
 });
 
 // 숫자·영문 강조용 산세리프와 라벨용 모노 폰트. next/font/google은 빌드 때 받아서 같은 도메인으로 서빙한다.
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-display" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-display" });
 const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-mono" });
 
 const description =
