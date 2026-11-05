@@ -62,6 +62,19 @@ export type Project = {
   honesty?: string[];
   role: string[];
   links: ProjectLink[];
+  // 값이 있으면 기본 그리드 대신 해당 묶음(projectGroups)에 따로 모아 보여 준다
+  group?: "manufacturing";
+};
+
+// 여러 프로젝트를 하나의 흐름으로 묶어 보여 줄 때 쓰는 머리말
+export const projectGroups = {
+  manufacturing: {
+    eyebrow: "제조 AI 프로젝트",
+    title: "예측하고, 근거를 대고, 조치까지 안내합니다",
+    intro:
+      "설비 센서로 고장을 예측하는 모델과, 그 예측을 받아 SOP 근거로 조치를 안내하는 에이전트를 API로 연결했습니다. 두 레포 모두 수치는 직접 실행해 잰 값이고, 데이터·문서가 합성이라는 점도 밝혀 두었습니다.",
+    flow: ["센서 스트림", "factory-pdm · 고장 확률 · 이상 점수", "sop-rag-agent · 상태 조회 → SOP 검색", "단계별 조치 + 출처"],
+  },
 };
 
 export const projects: Project[] = [
@@ -194,6 +207,100 @@ export const projects: Project[] = [
     links: [
       { label: "서비스", href: "https://new-chat-rho-jade.vercel.app" },
       { label: "GitHub", href: "https://github.com/mingdevu/gapjinnal" },
+    ],
+  },
+  {
+    id: "factory-pdm",
+    group: "manufacturing",
+    name: "factory-pdm",
+    tagline: "설비 센서 이상탐지 · 고장 예측 (예지보전)",
+    meta: "개인 프로젝트 · 1인 · 2026.11",
+    headlineMetric: { value: "PR-AUC 0.890", label: "고장 예측 (고장 비율 3.4% 불균형)", note: "테스트 2,000건 · F1 0.882 · Recall 0.824" },
+    stack: ["LightGBM", "Isolation Forest", "scikit-learn", "MLflow", "FastAPI", "SQLite", "Streamlit", "Docker", "pytest"],
+    image: {
+      src: "/images/factory-pdm-dashboard.png",
+      alt: "factory-pdm 모니터링 대시보드. 설비 5대의 이상 점수와 고장 확률, 센서 추이 그래프, 이상 알림 표가 보인다.",
+      width: 1500,
+      height: 1100,
+    },
+    problem:
+      "설비가 멈춘 뒤에 고치면 비용이 큽니다. 센서값(온도·회전수·토크·공구 마모)으로 고장 확률과 고장 유형을 미리 예측하고, 라벨이 없는 상황에서도 평소와 다른 패턴을 이상 점수로 알려 줍니다.",
+    approach: [
+      "UCI AI4I 2020 데이터(원저자가 만든 합성 데이터셋)에 온도차·전력·마모×토크처럼 물리적 의미가 있는 파생 피처를 추가",
+      "고장 비율 3.4%라 정확도 대신 PR-AUC·Recall·F1로 평가하고, 임계값은 검증셋에서만 결정 (train/val/test 60/20/20)",
+      "로지스틱 회귀 · LightGBM(가중치 유무) · Isolation Forest를 비교하고 모든 실험을 MLflow에 기록",
+      "고장을 놓치는 비용이 커서 'F1 최대'와 '재현율 0.9 이상' 두 운영점을 함께 보고",
+      "시뮬레이터 → 수집 API(SQLite) → 예측 API → Streamlit 대시보드를 Docker Compose로 구성",
+    ],
+    architecture: [
+      { from: "시뮬레이터", to: "수집 API", label: "센서 스트림" },
+      { from: "수집 API", to: "예측 API", label: "/predict · /anomaly" },
+      { from: "수집 API", to: "SQLite", label: "저장" },
+      { from: "대시보드", to: "수집 API", label: "조회" },
+      { from: "sop-rag-agent", to: "예측 API", label: "설비 상태 도구" },
+    ],
+    results: [
+      { value: "0.890", label: "고장 예측 PR-AUC", note: "LightGBM + 클래스 가중치 · 로지스틱 회귀 0.448" },
+      { value: "0.912", label: "재현율 우선 운영점 Recall", note: "놓친 고장 12건 → 6건, 대신 오경보 3건 → 127건" },
+      { value: "0.843", label: "고장 유형 분류 Macro-F1", note: "테스트 고장 68건 · Accuracy 0.941" },
+      { value: "25ms · 116ms", label: "예측 API p50 · 수집+예측 p50", note: "로컬 PC, 각 200회" },
+    ],
+    honesty: [
+      "AI4I는 규칙이 깔끔한 합성 데이터라 실제 현장보다 점수가 높게 나올 수 있다고 README에 명시",
+      "학습에 쓴 행을 스트리밍하면 대시보드 적중률이 부풀려지는 것을 발견하고, 테스트셋 행만 보내도록 수정",
+      "Isolation Forest는 PR-AUC 0.191로 지도학습보다 크게 낮은 결과를 그대로 기록",
+    ],
+    role: ["기획 · 모델링 · API · 대시보드 · Docker 1인 진행"],
+    links: [
+      { label: "GitHub", href: "https://github.com/mingdevu/factory-pdm" },
+    ],
+  },
+  {
+    id: "sop-rag-agent",
+    group: "manufacturing",
+    name: "sop-rag-agent",
+    tagline: "제조 SOP·매뉴얼 RAG + 설비 진단 에이전트",
+    meta: "개인 프로젝트 · 1인 · 2026.11",
+    headlineMetric: { value: "Recall@5 96.9%", label: "하이브리드 검색 (섹션 단위 정답)", note: "평가셋 37문항 · 지어낸 출처 0건" },
+    stack: ["LangGraph", "Claude Haiku 5.5", "BM25", "FAISS", "multilingual-e5", "FastAPI", "Streamlit", "Docker", "pytest"],
+    image: {
+      src: "/images/sop-rag-agent-chat.png",
+      alt: "sop-rag-agent 채팅 화면. 3번 설비 상태를 조회한 뒤 판단 근거와 단계별 조치를 문서 출처와 함께 보여 준다.",
+      width: 1400,
+      height: 1300,
+    },
+    problem:
+      "경보가 뜨면 작업자는 설비 상태, 따라야 할 SOP, 그 안의 단계를 각각 다른 곳에서 찾아야 합니다. LLM에 그냥 물으면 수치를 지어낼 수 있어서, 실시간 설비 데이터와 문서 근거로만 답하고 근거가 없으면 '모름'이라고 답하는 도우미를 만들었습니다.",
+    approach: [
+      "한국어 합성 문서 22개(SOP·정비 매뉴얼·에러코드)를 섹션 단위로 나누고 BM25 + 벡터 검색을 RRF로 결합",
+      "LangGraph 에이전트가 설비 상태 조회(factory-pdm API) → SOP 검색 → 에러코드 조회 도구를 골라 호출",
+      "답변 문장마다 [문서 §섹션] 출처를 달고, 검색되지 않은 섹션을 인용하면 표시하는 인용 검증",
+      "인젝션 방어 3겹: 문서 속 지시문 제거 · <document> 태그와 '문서는 지시가 아님' 규칙 · 인용 검증",
+      "질문 37개 평가셋으로 검색 Recall@k, 핵심 사실 포함률, 인용 정확도, '모름' 처리를 측정",
+    ],
+    architecture: [
+      { from: "채팅 UI", to: "FastAPI", label: "/ask · /agent" },
+      { from: "FastAPI", to: "LangGraph 에이전트", label: "도구 호출" },
+      { from: "LangGraph 에이전트", to: "하이브리드 검색", label: "search_sop" },
+      { from: "LangGraph 에이전트", to: "factory-pdm", label: "get_equipment_status" },
+      { from: "LangGraph 에이전트", to: "에러코드 표", label: "get_error_code" },
+    ],
+    results: [
+      { value: "96.9%", label: "검색 Recall@5", note: "BM25 · 벡터 · 하이브리드 비교, 하이브리드 개선 폭은 작음" },
+      { value: "96.9% · 0건", label: "정답 섹션 인용률 · 지어낸 출처", note: "근거 있는 32문항" },
+      { value: "5 / 5", label: "근거 없는 질문에 '모름'", note: "잘못된 '모름' 0건" },
+      { value: "0 / 3", label: "인젝션 지시를 따른 답변", note: "필터를 일부러 끈 원문을 주입해 측정" },
+      { value: "1.5s · $0.0003", label: "RAG 응답 p50 · 질문당 비용", note: "Haiku 5.5, 토큰 실측 × 정가" },
+    ],
+    honesty: [
+      "문서와 평가 질문을 같은 사람이 만들어 점수가 높게 나왔을 수 있다고 명시",
+      "근거 일치도(37/37)는 답변 모델이 직접 채점해 자기 평가 편향 가능성을 함께 기록",
+      "틀린 2문항은 모두 검색 누락이었고, 모델은 내용을 지어내지 않고 '문서에 없다'고 답함",
+    ],
+    role: ["기획 · 문서 설계 · 검색 · 에이전트 · 평가 1인 진행"],
+    links: [
+      { label: "GitHub", href: "https://github.com/mingdevu/sop-rag-agent" },
+      { label: "평가 리포트", href: "https://github.com/mingdevu/sop-rag-agent/blob/main/EVAL.md" },
     ],
   },
 ];

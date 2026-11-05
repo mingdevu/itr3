@@ -3,7 +3,7 @@
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
-import { projects, type Project } from "../data/content";
+import { projectGroups, projects, type Project } from "../data/content";
 import TodoText from "./TodoText";
 import Reveal from "./motion/Reveal";
 import Tilt from "./motion/Tilt";
@@ -221,6 +221,11 @@ function ProjectCard({ project, isOpen, onToggle }: { project: Project; isOpen: 
 export default function Projects() {
   // 한 번에 하나의 프로젝트만 펼친다. 여러 개를 동시에 열면 그리드가 너무 길어진다.
   const [openId, setOpenId] = useState<string | null>(null);
+  const toggle = (id: string) => setOpenId((current) => (current === id ? null : id));
+  // 묶음(group)이 있는 프로젝트는 기본 그리드에서 빼고 아래 묶음 블록에서 따로 보여 준다
+  const ungrouped = projects.filter((project) => !project.group);
+  const manufacturing = projects.filter((project) => project.group === "manufacturing");
+  const manufacturingHead = projectGroups.manufacturing;
 
   return (
     <section id="projects" className="section">
@@ -234,15 +239,43 @@ export default function Projects() {
 
       <LayoutGroup>
         <div className="bento">
-          {projects.map((project) => (
+          {ungrouped.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}
               isOpen={openId === project.id}
-              onToggle={() => setOpenId((current) => (current === project.id ? null : project.id))}
+              onToggle={() => toggle(project.id)}
             />
           ))}
         </div>
+
+        {manufacturing.length > 0 && (
+          <section className="projectGroup" aria-labelledby="group-manufacturing-title">
+            <Reveal className="groupHead">
+              <p className="eyebrow mono">{manufacturingHead.eyebrow}</p>
+              <h3 id="group-manufacturing-title" className="groupTitle display">
+                {manufacturingHead.title}
+              </h3>
+              <p className="sectionIntro">{manufacturingHead.intro}</p>
+              {/* 두 프로젝트가 어떻게 이어지는지 한 줄 흐름으로 보여 준다 */}
+              <ol className="groupFlow" aria-label="두 프로젝트의 연결 흐름">
+                {manufacturingHead.flow.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </Reveal>
+            <div className="bento">
+              {manufacturing.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  isOpen={openId === project.id}
+                  onToggle={() => toggle(project.id)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </LayoutGroup>
     </section>
   );
