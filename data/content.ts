@@ -172,6 +172,12 @@ export const projects: Project[] = [
     meta: "개인 프로젝트 · 1인 · 2026.07",
     headlineMetric: { value: "1인", label: "기획부터 배포까지", note: "AI 도구와 스타터 템플릿을 활용해 빠르게 완성" },
     stack: ["Next.js 16", "React 19", "Neon Postgres", "Vercel Blob", "Vercel"],
+    image: {
+      src: "/images/gapjinnal-missions.png",
+      alt: "값진날 미션 갤러리 화면. 사진·폭로·노래·감동 등 8개 미션 카드마다 오늘의 주인공 이름을 넣거나 랜덤으로 뽑을 수 있다.",
+      width: 1822,
+      height: 926,
+    },
     problem:
       "친구 다섯 명이 함께한 추억 사진을 한곳에 모으고, 각자 그 순간에 '마음값'을 매겨 보는 우리끼리의 공간이 필요했습니다.",
     approach: [
@@ -181,7 +187,7 @@ export const projects: Project[] = [
       "AI 도구와 스타터 템플릿을 활용해 기획부터 배포까지 혼자 빠르게 진행",
     ],
     results: [
-      { value: "6가지", label: "기능", note: "추억 업로드 · 마음값 평가 · 댓글 · 프로필 사진 · 맛집 추천 · 맛집 투표" },
+      { value: "7가지", label: "기능", note: "추억 업로드 · 마음값 평가 · 댓글 · 프로필 사진 · 미션 갤러리 · 맛집 추천 · 맛집 투표" },
       { value: "Vercel", label: "배포", note: "new-chat-rho-jade.vercel.app" },
     ],
     role: ["기획 · 구현 · 배포 1인 진행"],
