@@ -18,7 +18,7 @@ export const hero = {
   // 어절(띄어쓰기 단위)로 나눠 순서대로 등장시킨다. 줄은 배열 단위로 바뀐다.
   headline: ["LLM 에이전트부터 음성 모델까지,", "숫자로 검증합니다."],
   intro:
-    "도구 호출 에이전트와 MCP 서버를 만들고, TTS 모델을 파인튜닝하고, 평가셋을 설계해 개선 전후를 직접 잽니다. 기준에 못 미친 결과도 숨기지 않고 기록합니다.",
+    "측정 없이 결정하지 않습니다. 후보 모델은 서비스와 같은 조건으로 시험하고, 프롬프트는 한 번에 하나씩 바꿔 다시 재고, 기준에 못 미친 결과도 숨기지 않고 기록합니다.",
   stats: [
     {
       label: "MESTORY 판정 일치 (judge_match)",
@@ -28,15 +28,6 @@ export const hero = {
       prefix: "0.860 → ",
       suffix: "",
       note: "50문항 × 3회 평균",
-    },
-    {
-      label: "K-Menu TTS LoRA 하이퍼파라미터 탐색",
-      from: 0,
-      to: 6,
-      decimals: 0,
-      prefix: "",
-      suffix: "회",
-      note: "학습률·rank·epoch 비교",
     },
     {
       label: "과정 프로젝트 대상",
@@ -78,8 +69,8 @@ export const projects: Project[] = [
     id: "mestory",
     name: "MESTORY",
     tagline: "설비 다운타임 원인 분석 리포트 자동 생성",
-    meta: "이스트캠프 2차 프로젝트 · 3인 팀 · 2026.09–10 (커밋 기준)",
-    headlineMetric: { value: "0.860 → 0.903", label: "판정 일치 judge_match", note: "50문항 × 3회 평균" },
+    meta: "이스트캠프 2차 프로젝트 · 3인 팀 · 대상 수상 · 2026.09–10",
+    headlineMetric: { value: "0.927 → 0.987", label: "모르는 것을 모른다고 답하는 정직성", note: "같은 50문항 × 3회 평균" },
     stack: ["LangChain Agent", "FastMCP", "FastAPI", "Next.js", "Postgres", "Langfuse", "Whisper", "MMS-TTS", "Railway"],
     image: {
       src: "/images/mestory-ai-root-cause.png",
@@ -90,11 +81,11 @@ export const projects: Project[] = [
     problem:
       "설비가 멈출 때마다 MES 담당자는 정지 로그를 수작업으로 뒤져 원인 설명 자료를 만들어야 했습니다. 정지 로그·에러코드 사전·정비이력을 근거로 원인·심각도·근거·권장 조치를 담은 리포트를 자동으로 만들고, 최종 판단은 사람이 내리도록 돕습니다.",
     approach: [
-      "LangChain create_tool_calling_agent + AgentExecutor가 MCP 도구 5개를 필요한 만큼 호출해 사실을 모은 뒤 리포트를 생성",
-      "FastMCP 서버: 벡터 검색 없이 정확한 키로만 조회, /mcp(Streamable HTTP)로 외부 MCP 클라이언트에도 공개하고 서비스 토큰으로 접근 제어",
-      "Pydantic 스키마 검증 + 최대 3단계 재시도, 모두 실패하면 빈 리포트로 감추지 않고 HTTP 503",
-      "질문 유형별 모델 라우팅(OpenRouter), Langfuse로 트레이스·비용·지연 관측과 프롬프트 버전 관리",
-      "Whisper-small STT, MMS-TTS kor를 도메인 문장(설비ID·에러코드)에 맞게 파인튜닝해 Hugging Face에 공개",
+      "모델 선정: 보안 정책상 데이터 미저장(ZDR)을 켜야 해 쓸 수 있는 모델이 줄자, 후보 9개를 서비스와 같은 조건으로 시험해 통과한 3개 중 하나를 선택",
+      "프롬프트 개선: 규칙을 한 번에 하나만 바꾸고 같은 50문항을 3회씩 측정, 오히려 나빠진 변경 2건은 되돌림",
+      "모델 라우팅: 출력 형식을 자주 어겨 꺼 두었던 경량 모델을 형식 강제 설정 후 질문 유형별로 다시 측정, 품질 차이가 없던 원인·심각도 질문에만 배정",
+      "STT 파인튜닝: 설비 번호·에러코드가 담긴 문장으로 학습 데이터를 만들어 Whisper-small을 학습하고, 사람이 녹음한 42문장으로 평가",
+      "서비스 구조: LangChain 도구 호출 에이전트가 FastMCP 서버의 조회 도구 5개로 정지 로그·에러코드·정비이력을 모으고, Pydantic 검증 실패 시 빈 리포트 대신 503",
     ],
     architecture: [
       { from: "Next.js 14", to: "FastAPI", label: "HTTPS + JWT" },
@@ -107,9 +98,9 @@ export const projects: Project[] = [
     results: [
       { value: "0.860 → 0.903", label: "판정 일치 judge_match", note: "50문항 × 3회 평균 · 3회 중 2회는 0.9 미만" },
       { value: "0.927 → 0.987", label: "정직성 judge_honesty", note: "치명 문항 회당 3.7건 → 1.0건" },
-      { value: "1.000", label: "출력 계약 준수율", note: "텍스트 50문항 × 6회 · 멀티모달 50건 × 2회" },
+      { value: "−79% · 20.5s → 14.3s", label: "원인·심각도 질문 비용 · 응답 시간", note: "경량 모델 라우팅, 품질은 기존 모델과 차이 없음" },
       { value: "14.3% → 98.6%", label: "STT 설비 코드 정확도", note: "사람 녹음 42문장 · CER 34.2% → 2.1%" },
-      { value: "18.5% → 16.3%", label: "TTS 재인식 CER", note: "평가 15문장 × 3회" },
+      { value: "1.000", label: "출력 계약 준수율", note: "텍스트 50문항 × 6회 · 멀티모달 50건 × 2회" },
     ],
     gates: {
       verdict: "HOLD",
@@ -122,16 +113,11 @@ export const projects: Project[] = [
       ],
     },
     honesty: [
+      "응답 속도가 기준에 못 미쳐 출시 판정을 '보류(HOLD)'로 그대로 기록",
       "판정 일치는 개선 전후 범위가 겹쳐(전 최고 0.89, 후 최저 0.88) '좋아진 경향'까지만 주장",
-      "TTS는 교체 전 모델(CER 3.4%)보다 나빠진 것을 알고 적용했고, 기준 미달을 Spec에 그대로 남김",
-      "프롬프트 인젝션 방어 시도가 실패한 기록도 평가 리포트에 남김",
+      "실패한 경량 모델도 원인(능력 vs 출력 형식)을 나눠 다시 시험해 재사용",
     ],
-    role: [
-      "MCP · 데이터 리드 (README 팀 표)",
-      "평가셋(evals/)과 평가 리포트(EVAL_REPORT.md) 작성 주도: 커밋 기준 각각 140/169, 111/133",
-      "MCP 서버(mcp_server/) 커밋 24/34 · 음성 서비스(voice/) 커밋 17/22",
-      "TODO(확인 필요) STT·TTS 파인튜닝 중 본인이 맡은 범위",
-    ],
+    role: ["모델 선정 · 평가", "질문 유형별 모델 라우팅", "STT 파인튜닝"],
     links: [
       { label: "서비스", href: "https://mestory-app.up.railway.app" },
       { label: "GitHub", href: "https://github.com/mingdevu/mestory" },
@@ -144,7 +130,7 @@ export const projects: Project[] = [
     id: "kmenu",
     name: "K-Menu Voice Guide",
     tagline: "메뉴판 사진 한 장 → 영어 설명과 음성 안내",
-    meta: "이스트캠프 1차 프로젝트 · 4인 팀 · 개발 14일",
+    meta: "이스트캠프 1차 프로젝트 · 4인 팀 · 대상 수상 · 개발 14일",
     headlineMetric: { value: "0% → 91.67%", label: "OCR 음식명 매칭 재현율", note: "실제 메뉴판 사진, 매칭 대상 36장" },
     stack: ["Qwen3-TTS", "LoRA (PEFT)", "PaddleOCR", "OpenCV", "RapidFuzz", "FastAPI", "React", "Flutter", "HF Spaces"],
     image: {
@@ -186,7 +172,6 @@ export const projects: Project[] = [
     meta: "개인 프로젝트 · 1인 · 2026.07",
     headlineMetric: { value: "1인", label: "기획부터 배포까지", note: "AI 도구와 스타터 템플릿을 활용해 빠르게 완성" },
     stack: ["Next.js 16", "React 19", "Neon Postgres", "Vercel Blob", "Vercel"],
-    imageTodo: "TODO(확인 필요) 값진날 화면 캡처 이미지",
     problem:
       "친구 다섯 명이 함께한 추억 사진을 한곳에 모으고, 각자 그 순간에 '마음값'을 매겨 보는 우리끼리의 공간이 필요했습니다.",
     approach: [
@@ -210,54 +195,54 @@ export const projects: Project[] = [
 // 이스트캠프 섹션. 단계별로 무엇을 배웠고 어느 프로젝트에서 썼는지 근거를 붙인다.
 export const camp = {
   title: "이스트캠프 AI휴먼 7기",
-  period: "TODO(확인 필요) 과정 기간",
+  intro: "머신러닝·딥러닝부터 멀티모달, STT·TTS, 프롬프트 엔지니어링, RAG까지. 배운 기술마다 실제로 쓴 프로젝트를 근거로 붙였습니다.",
   timeline: [
     {
-      when: "TODO(확인 필요) 시기",
-      title: "프롬프트 엔지니어링",
-      detail: "MESTORY에서 판단 기준(SKILL.md)을 프롬프트로 운영하고 개선 전후를 평가",
-      evidence: "MESTORY",
+      when: "2026.06–07",
+      title: "Python · 머신러닝 · 딥러닝",
+      detail: "기초부터 다시 다지며 논문 13편을 요약하고, 각 기법이 어떤 한계를 해결하려고 나왔는지 정리",
+      evidence: "노션 TIL · 논문 요약",
     },
     {
       when: "2026.08",
-      title: "멀티모달 · OCR · TTS",
-      detail: "이미지 → 텍스트 → 음성으로 이어지는 파이프라인, Qwen3-TTS LoRA 파인튜닝",
-      evidence: "K-Menu Voice Guide",
+      title: "멀티모달 · TTS",
+      detail: "메뉴판 사진 → 텍스트 → 영어 음성으로 이어지는 서비스, Qwen3-TTS LoRA 파인튜닝과 하이퍼파라미터 실험",
+      evidence: "K-Menu Voice Guide · 대상",
     },
     {
       when: "2026.09–10",
-      title: "LLM 에이전트 · MCP",
-      detail: "LangChain 도구 호출 에이전트와 FastMCP 서버로 구조화된 데이터를 정확한 키로 조회",
+      title: "프롬프트 엔지니어링 · 평가",
+      detail: "규칙을 한 번에 하나만 바꾸고 같은 50문항을 3회씩 측정, Langfuse로 트레이스·비용·지연 관측",
+      evidence: "MESTORY · 대상",
+    },
+    {
+      when: "2026.09–10",
+      title: "LLM 에이전트 · MCP · 모델 라우팅",
+      detail: "도구 호출 에이전트와 MCP 서버로 데이터를 조회하고, 질문 유형별로 모델을 나눠 비용 −79%",
       evidence: "MESTORY",
     },
     {
       when: "2026.09–10",
-      title: "STT · TTS 파인튜닝",
-      detail: "Whisper-small, MMS-TTS kor를 도메인 문장에 맞게 파인튜닝해 배포",
-      evidence: "MESTORY",
-    },
-    {
-      when: "2026.09–10",
-      title: "평가 · 관측 (Langfuse)",
-      detail: "평가셋 설계, LLM judge 지표, 출시 게이트, 트레이스·비용·지연 관측",
+      title: "STT 파인튜닝",
+      detail: "설비 용어 문장으로 학습 데이터를 만들어 Whisper-small 학습, 설비 코드 정확도 14% → 98.6%",
       evidence: "MESTORY",
     },
     {
       when: "진행 중",
-      title: "RAG · LangGraph",
-      detail: "3차 프로젝트로 DART 공시 기반 여신심사 RAG를 진행 중입니다. 하이브리드 검색(BM25 + 벡터, RRF), pgvector, LangGraph 에이전틱 RAG를 다룹니다.",
+      title: "RAG · 하이브리드 검색",
+      detail: "단어 빈도, BM25, 글자 단위 BM25, 임베딩 검색을 단계별로 비교하며 하이브리드 검색 RAG를 만들고, OpenDART 공시를 SQLite에 적재하며 실행 이력으로 재현성을 확보",
       evidence: "3차 프로젝트 (진행 중)",
     },
   ],
   awards: [
-    { title: "음성 멀티모달 만들기", prize: "대상", project: "TODO(확인 필요) 수상 프로젝트" },
-    { title: "거대 언어 모델을 활용한 PERSO AI 답변 기능 구현하기", prize: "대상", project: "TODO(확인 필요) 수상 프로젝트" },
+    { title: "음성 멀티모달 만들기", prize: "대상", project: "수상 프로젝트 · K-Menu Voice Guide (1차)" },
+    { title: "거대 언어 모델을 활용한 PERSO AI 답변 기능 구현하기", prize: "대상", project: "수상 프로젝트 · MESTORY (2차)" },
   ],
 };
 
 export const til = {
   message: "과정 내내 꾸준히 TIL을 썼습니다.",
-  sub: "배운 것을 그날 정리하는 습관이 프로젝트의 평가 리포트와 문서로 이어졌습니다.",
+  sub: "배운 내용은 TIL로 정리하고, 논문 13편을 요약하며 각 기법이 어떤 한계를 해결하려고 나왔는지 기록했습니다. 이 습관이 프로젝트의 평가 리포트로 이어졌습니다.",
   // 출처: 노션 TIL 페이지의 '오늘의 학습' 표 (2026-11-05 확인).
   // 260917 항목은 날짜 칸이 비어 있어 제목으로 날짜를 정했다(본인 확인 후 포함).
   stats: [
@@ -285,13 +270,29 @@ export const skills = [
 ];
 
 export const about = {
-  intro:
-    "부산대학교에서 IT응용공학을 전공했고, 이스트캠프 AI휴먼 7기에서 LLM 에이전트·MCP·음성 모델·평가를 실제 배포되는 서비스로 만들었습니다. 만든 것을 숫자로 재고, 그 숫자를 정직하게 보고하는 엔지니어가 되고자 합니다.",
+  title: "관찰하고, 진단하고, 처방한 뒤, 확인합니다.",
+  intro: [
+    "학원에서 1년간 초·중등 수학을 가르쳤습니다. 하위권 학생 대부분은 지금 푸는 문제가 아니라 앞 단계 개념에서 멈춰 있었고, 기본 개념 정립 → 교과서 반복 풀이 → 기출 유형 학습의 3단계로 과정을 설계해 상위권 수준까지 끌어올렸습니다.",
+    "그때 익힌 방식을 AI 서비스에 그대로 씁니다. 모델의 성능은 감이 아니라 측정으로 판단하고, 문제가 생기면 원인을 나눠 확인합니다.",
+  ],
   facts: [
+    { label: "경력", items: ["초·중등 수학 강사 1년 (학원)"] },
     { label: "학력", items: ["부산대학교 IT응용공학과 졸업"] },
     { label: "자격", items: ["정보처리기사", "SQLD", "ADsP"] },
     { label: "어학", items: ["G-TELP 92", "TOEIC 840", "영어 회화 가능"] },
     { label: "언어", items: ["Python", "C", "SQL"] },
+    { label: "기록", items: ["TIL 49편", "논문 요약 13편"] },
+  ],
+};
+
+// 마지막 연락 섹션. 자기소개서의 마무리 문장을 바탕으로 했다. 요약 숫자는 근거를 확인한 값만 쓴다.
+export const contact = {
+  title: "데모가 아니라, 믿고 쓰는 AI 서비스를 만들겠습니다.",
+  body: "잘 돌아가는 것처럼 보이는 기능보다 실제 사용자가 믿고 쓸 수 있는 결과를 만드는 일에 관심이 있습니다. 채용이나 협업 제안은 메일로 연락 주세요.",
+  highlights: [
+    { value: "대상 2회", label: "이스트캠프 프로젝트" },
+    { value: "98.6%", label: "STT 설비 코드 정확도" },
+    { value: "0.987", label: "답변 정직성 점수" },
   ],
 };
 

@@ -492,7 +492,7 @@ h4 {
 }
 .heroStats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 340px)) /* 박스 2개: 너무 넓게 늘어지지 않게 최대 폭 제한 */;
   gap: 14px;
   margin: clamp(48px, 7vw, 80px) 0 0;
   padding: 0;
@@ -570,6 +570,39 @@ h4 {
   gap: 22px;
   align-content: start;
 }
+.cardFace {
+  position: relative;
+}
+/* 카드 전체 클릭 영역. 실제 링크 요소를 카드 위에 투명하게 펼친다 */
+.cardLink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 16px;
+}
+.cardLinkHint {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--white);
+  background: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+  transition: opacity 0.25s, transform 0.25s var(--ease-out);
+}
+.cardSurface:hover .cardLinkHint,
+.cardLink:focus-visible .cardLinkHint {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+/* 상세 버튼은 링크 위에 올려서, 누르면 이동하지 않고 상세만 펼친다 */
+.detailToggle {
+  position: relative;
+  z-index: 2;
+}
 .bentoCard.isOpen .cardFace {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   align-items: start;
@@ -579,6 +612,7 @@ h4 {
 }
 .cardMeta {
   margin-bottom: 10px;
+  padding-right: 92px; /* 오른쪽 위 'GitHub ↗' 표시와 겹치지 않게 */
   color: var(--muted);
   font-size: 12px;
 }
@@ -1060,19 +1094,32 @@ h4 {
   color: var(--muted);
   font-size: 12px;
 }
-.heatmapScroll {
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-.heatmap {
+.heatmapBody {
   display: flex;
-  gap: 4px;
-  width: max-content;
+  gap: 8px;
 }
-.heatCol {
+.heatDays {
   display: grid;
-  grid-template-rows: repeat(7, 12px);
-  gap: 4px;
+  grid-template-rows: repeat(5, 1fr);
+  gap: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+}
+.heatDays span {
+  display: flex;
+  align-items: center;
+}
+/* 열(주) 수만큼 폭을 똑같이 나누고, 셀은 정사각형으로 둔다.
+   세로 5줄(평일)을 먼저 채우고 다음 열로 넘어가도록 grid-auto-flow: column을 쓴다 */
+.heatmap {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(var(--weeks), minmax(0, 1fr));
+  grid-template-rows: repeat(5, auto);
+  grid-auto-flow: column;
+  gap: 3px;
+  min-width: 0;
 }
 .heatCell {
   display: block;
@@ -1080,6 +1127,12 @@ h4 {
   height: 12px;
   border-radius: 3px;
   background: rgba(21, 19, 26, 0.07);
+}
+.heatmap .heatCell {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 4px;
 }
 .heatmap .heatCell {
   opacity: 0;
@@ -1178,45 +1231,98 @@ h4 {
   list-style: none;
   font-weight: 600;
 }
+/* 연락 섹션: 왼쪽(제안 문구·버튼) + 오른쪽(연락처·요약) 두 단 */
 .contactCard {
-  padding: clamp(28px, 6vw, 72px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(28px, 5vw, 56px);
+  align-items: center;
+  padding: clamp(24px, 5vw, 56px);
   border-radius: 32px;
-  text-align: center;
 }
-.contactCard .eyebrow {
-  justify-content: center;
+.contactMain h2 {
+  margin-bottom: 14px;
 }
-.contactCard h2 {
-  max-width: 760px;
-  margin-right: auto;
-  margin-left: auto;
+.contactBody {
+  max-width: 520px;
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.75;
 }
-.contactLinks {
+.contactInterests {
+  margin-bottom: 26px;
+}
+.contactAside {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-  max-width: 760px;
-  margin: 32px auto 0;
-  text-align: left;
 }
-.contactItem {
+.contactList {
   display: grid;
-  gap: 6px;
-  padding: 18px 20px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 20px;
   background: var(--white);
-  transition: transform 0.25s var(--ease-out);
+  list-style: none;
 }
-.contactItem:hover {
-  transform: translateY(-2px);
+.contactList li + li {
+  border-top: 1px solid var(--line);
 }
-.contactItem span {
+.contactRow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 60px;
+  padding: 14px 18px;
+  transition: background-color 0.2s;
+}
+.contactRow:hover {
+  background: rgba(249, 168, 212, 0.14);
+}
+.contactRow > .mono {
   color: var(--rose-deep);
   font-size: 12px;
 }
-.contactItem strong {
+.contactRow strong {
+  font-size: 15px;
+  font-weight: 600;
   overflow-wrap: anywhere;
+}
+.contactArrow {
+  color: var(--muted);
+  transition: transform 0.25s var(--ease-out);
+}
+.contactRow:hover .contactArrow {
+  transform: translate(2px, -2px);
+}
+.contactHighlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.contactHighlights li {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+}
+.contactHighlights strong {
+  color: var(--rose);
+  font-size: clamp(18px, 1.8vw, 22px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.contactHighlights span {
+  color: var(--muted);
+  font-size: 12px;
 }
 .footer {
   margin-top: 40px;
@@ -1265,7 +1371,8 @@ h4 {
   .bentoCard.isOpen .cardFace,
   .detail,
   .campGrid,
-  .aboutGrid {
+  .aboutGrid,
+  .contactCard {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -1273,9 +1380,16 @@ h4 {
 @media (max-width: 640px) {
   .heroStats,
   .tilStats,
-  .factGrid,
-  .contactLinks {
+  .factGrid {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .contactRow {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+  .contactRow strong {
+    font-size: 13.5px; /* 이메일 주소가 두 줄로 끊기지 않게 */
   }
   .heroActions .button {
     flex: 1 1 100%;
@@ -1324,13 +1438,18 @@ h4 {
   }
   .button,
   .nav,
-  .contactItem,
+  .contactArrow,
   .toggleIcon,
   .cardGlow {
     transition: none;
   }
   .button:hover,
-  .contactItem:hover {
+  .contactRow:hover .contactArrow {
     transform: none;
   }
+}
+
+/* About 소개 문단이 두 개라 사이 간격을 둔다 */
+.aboutParagraph + .aboutParagraph {
+  margin-top: 14px;
 }

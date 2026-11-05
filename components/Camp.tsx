@@ -1,36 +1,42 @@
 "use client";
 
 import { motion, useInView, useReducedMotion, useScroll } from "motion/react";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, type CSSProperties } from "react";
 import { camp, profile, til } from "../data/content";
 import TodoText from "./TodoText";
 import Reveal from "./motion/Reveal";
 
-const EMPTY_WEEKS = 26;
+const EMPTY_WEEKS = 18;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEKDAY_LABELS = ["월", "화", "수", "목", "금"];
 
-// TIL 작성 날짜 목록으로 GitHub 잔디 같은 주(열) × 요일(행) 격자를 만든다.
+type HeatCell = { key: string; isWritten: boolean; label: string };
+
+const toIso = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+// TIL 작성 날짜 목록으로 주(열) × 평일(행 5개) 격자를 만든다.
+// 주말 작성 기록이 0건이라 주말 줄은 빼서, 의미 없는 빈칸 없이 촘촘하게 보이게 했다.
 // 날짜가 비어 있으면 빈 격자만 그린다. 가짜 기록으로 채우지 않기 위해서다.
-function buildHeatmap(dates: string[]) {
+function buildHeatmap(dates: string[]): HeatCell[][] {
   const written = new Set(dates);
   if (dates.length === 0) {
     return Array.from({ length: EMPTY_WEEKS }, (_, week) =>
-      Array.from({ length: 7 }, (_, day) => ({ key: `empty-${week}-${day}`, isWritten: false, label: "" }))
+      WEEKDAY_LABELS.map((_, day) => ({ key: `empty-${week}-${day}`, isWritten: false, label: "" }))
     );
   }
   const sorted = [...dates].sort();
   const first = new Date(`${sorted[0]}T00:00:00`);
   const last = new Date(`${sorted[sorted.length - 1]}T00:00:00`);
-  const start = new Date(first.getTime() - first.getDay() * DAY_MS); // 그 주의 일요일부터
-  const weeks: { key: string; isWritten: boolean; label: string }[][] = [];
-  for (let cursor = start; cursor <= last; ) {
-    const week = [];
-    for (let day = 0; day < 7; day++) {
-      const iso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
-      week.push({ key: iso, isWritten: written.has(iso), label: iso });
-      cursor = new Date(cursor.getTime() + DAY_MS);
-    }
-    weeks.push(week);
+  const daysSinceMonday = (first.getDay() + 6) % 7;
+  const weeks: HeatCell[][] = [];
+  for (let monday = new Date(first.getTime() - daysSinceMonday * DAY_MS); monday <= last; monday = new Date(monday.getTime() + 7 * DAY_MS)) {
+    weeks.push(
+      WEEKDAY_LABELS.map((_, day) => {
+        const iso = toIso(new Date(monday.getTime() + day * DAY_MS));
+        return { key: iso, isWritten: written.has(iso), label: iso };
+      })
+    );
   }
   return weeks;
 }
@@ -44,28 +50,33 @@ function TilHeatmap() {
   return (
     <div className="heatmapCard glass">
       <div className="heatmapHead">
-        <span className="mono">TIL 작성 기록</span>
+        <span className="mono">TIL 작성 기록 · 평일</span>
         {!hasData && <TodoText text="TODO(확인 필요) 작성 날짜 데이터를 넣으면 채워집니다" />}
       </div>
-      <div className="heatmapScroll">
+      <div className="heatmapBody">
+        <div className="heatDays mono" aria-hidden>
+          {WEEKDAY_LABELS.map((label) => (
+            <span key={label}>{label}</span>
+          ))}
+        </div>
+        {/* 열 개수를 CSS 변수로 넘겨, 주 수와 상관없이 카드 폭을 꽉 채우게 한다 */}
         <div
           ref={gridRef}
           className={`heatmap ${isVisible ? "isVisible" : ""}`}
+          style={{ "--weeks": weeks.length } as CSSProperties}
           role="img"
-          aria-label={hasData ? `TIL 작성 기록 히트맵, ${til.dates.length}일 작성` : "TIL 작성 기록 히트맵, 데이터 준비 중"}
+          aria-label={hasData ? `TIL 작성 기록 히트맵, 평일 기준 ${til.dates.length}일 작성` : "TIL 작성 기록 히트맵, 데이터 준비 중"}
         >
-          {weeks.map((week, weekIndex) => (
-            <div className="heatCol" key={week[0].key}>
-              {week.map((cell) => (
-                <span
-                  key={cell.key}
-                  className={`heatCell ${cell.isWritten ? "isWritten" : ""}`}
-                  style={{ animationDelay: `${weekIndex * 28}ms` }}
-                  title={cell.label || undefined}
-                />
-              ))}
-            </div>
-          ))}
+          {weeks.flatMap((week, weekIndex) =>
+            week.map((cell) => (
+              <span
+                key={cell.key}
+                className={`heatCell ${cell.isWritten ? "isWritten" : ""}`}
+                style={{ animationDelay: `${weekIndex * 30}ms` }}
+                title={cell.label || undefined}
+              />
+            ))
+          )}
         </div>
       </div>
       <div className="heatLegend mono" aria-hidden>
@@ -118,7 +129,7 @@ export default function Camp() {
         <p className="eyebrow mono">02 · EST Camp</p>
         <h2>{camp.title}</h2>
         <p className="sectionIntro">
-          과정 기간: <TodoText text={camp.period} />. 배운 기술마다 실제로 쓴 프로젝트를 근거로 붙였습니다.
+          {camp.intro}
         </p>
       </Reveal>
 

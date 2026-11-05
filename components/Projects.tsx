@@ -123,6 +123,7 @@ function ProjectDetail({ project }: { project: Project }) {
 function ProjectCard({ project, isOpen, onToggle }: { project: Project; isOpen: boolean; onToggle: () => void }) {
   const detailId = `${project.id}-detail`;
   const isFeatured = project.id === "mestory";
+  const githubUrl = project.links.find((link) => link.label === "GitHub")?.href;
 
   return (
     <motion.article
@@ -135,6 +136,15 @@ function ProjectCard({ project, isOpen, onToggle }: { project: Project; isOpen: 
       <Tilt className={`cardSurface glass ${isOpen ? "" : "canTilt"}`}>
         <span className="cardGlow" aria-hidden />
         <motion.div layout="position" className="cardFace">
+          {/* 카드 전체를 덮는 링크: 카드 어디를 눌러도 GitHub가 새 탭으로 열린다.
+              진짜 <a>라서 키보드(Tab·Enter)와 스크린리더로도 쓸 수 있다. 상세 버튼은 이 링크보다 위에 놓인다. */}
+          {githubUrl && (
+            <a className="cardLink" href={githubUrl} target="_blank" rel="noreferrer" aria-label={`${project.name} GitHub 저장소 새 탭에서 열기`}>
+              <span className="cardLinkHint mono" aria-hidden>
+                GitHub ↗
+              </span>
+            </a>
+          )}
           <div className="cardText">
             <p className="cardMeta mono">{project.meta}</p>
             <h3 id={`${project.id}-title`} className="cardTitle display">
@@ -218,7 +228,7 @@ export default function Projects() {
         <p className="eyebrow mono">01 · Projects</p>
         <h2>직접 만들고, 직접 잰 프로젝트</h2>
         <p className="sectionIntro">
-          각 카드를 열면 문제 → 접근 → 결과 → 내 역할 순서로 볼 수 있습니다. 수치는 각 레포의 README와 평가 리포트에 적힌 값만 옮겼습니다.
+          카드를 누르면 GitHub 저장소가 열리고, 아래 버튼을 누르면 문제 → 접근 → 결과 → 내 역할 순서로 상세를 볼 수 있습니다. 수치는 각 레포의 README와 평가 리포트에 적힌 값만 옮겼습니다.
         </p>
       </Reveal>
 
