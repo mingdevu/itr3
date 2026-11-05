@@ -1,0 +1,1336 @@
+/* ==========================================================
+   컬러 시스템: 흰색 베이스 + 핑크 포인트 + 보라·파랑 오로라
+   핑크/로즈는 강조에만 쓰고, 전체 인상은 흰색으로 깨끗하게 둔다.
+   ========================================================== */
+:root {
+  --white: #ffffff;
+  --pink: #f9a8d4;
+  --rose: #e11d48; /* CTA·강조. 흰 배경 대비 약 4.7:1 */
+  --rose-deep: #9f1239; /* 작은 글씨용 진한 로즈. 대비 확보 */
+  --purple: #a78bfa;
+  --blue: #60a5fa;
+  --ink: #15131a;
+  --muted: #5f5668; /* 흰 배경 대비 약 6.9:1 */
+  --line: rgba(21, 19, 26, 0.08);
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-body: var(--font-pretendard), "Pretendard", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-display-stack: var(--font-display), var(--font-pretendard), system-ui, sans-serif;
+  --font-mono-stack: var(--font-mono), ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* 앵커 이동 시 고정 헤더에 제목이 가리지 않게 한다 (Lenis를 끈 경우에도 동작) */
+  scroll-padding-top: 88px;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Lenis 권장 스타일: 부드러운 스크롤 중에는 브라우저 기본 smooth 스크롤과 겹치지 않게 한다 */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--white);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  word-break: keep-all; /* 한국어를 어절 단위로 줄바꿈 */
+  overflow-wrap: break-word; /* 긴 URL·이메일이 화면을 넘지 않게 */
+  overflow-x: clip; /* hidden과 달리 sticky·fixed 동작을 깨지 않는다 */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 페이지 전체의 정적인 은은한 빛과 격자. 움직이지 않으므로 글래스 카드의 blur 비용이 낮다 */
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  content: "";
+  background:
+    radial-gradient(circle at 8% 30%, rgba(249, 168, 212, 0.16), transparent 32rem),
+    radial-gradient(circle at 92% 55%, rgba(96, 165, 250, 0.12), transparent 30rem),
+    radial-gradient(circle at 40% 95%, rgba(167, 139, 250, 0.12), transparent 30rem);
+}
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(225, 29, 72, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 165, 250, 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin-top: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 키보드 사용자를 위한 포커스 표시. 마우스 클릭에는 뜨지 않는다(:focus-visible) */
+:focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+.skipLink {
+  position: fixed;
+  top: -80px;
+  left: 16px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--white);
+  font-weight: 700;
+}
+.skipLink:focus {
+  top: 16px;
+}
+
+.display {
+  font-family: var(--font-display-stack);
+  letter-spacing: -0.01em;
+}
+.mono {
+  font-family: var(--font-mono-stack);
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================
+   글래스: 반투명 + 1px 그라데이션 보더 + 안쪽 하이라이트 + 노이즈
+   ========================================================== */
+.glass {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55));
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 1px 2px rgba(21, 19, 26, 0.04),
+    0 28px 60px -28px rgba(120, 60, 140, 0.28);
+}
+/* 1px 그라데이션 보더: 패딩 1px 영역만 남기고 안쪽을 mask로 뚫는 방식 */
+.glass::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(249, 168, 212, 0.55) 40%, rgba(167, 139, 250, 0.35) 70%, rgba(255, 255, 255, 0.8));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+/* 노이즈 텍스처: 매끈한 blur가 '싸 보이는' 느낌을 줄여 준다 */
+.glass::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  content: "";
+  pointer-events: none;
+  background-image: var(--noise);
+  opacity: 0.05;
+}
+
+/* ==========================================================
+   공통 레이아웃·타이포
+   ========================================================== */
+.section {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(72px, 10vw, 136px) 0;
+}
+
+.sectionHead {
+  max-width: 760px;
+  margin-bottom: clamp(32px, 5vw, 56px);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--rose-deep);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin-bottom: 18px;
+  font-size: clamp(30px, 4.6vw, 58px);
+  font-weight: 800;
+  line-height: 1.16;
+  text-wrap: balance;
+}
+
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+.sectionIntro {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.25s var(--ease-out);
+}
+.button:hover {
+  transform: translateY(-2px);
+}
+.button.primary {
+  color: var(--white);
+  background: linear-gradient(135deg, var(--rose), #be185d);
+  box-shadow: 0 14px 34px -12px rgba(225, 29, 72, 0.55);
+}
+.button.secondary {
+  border: 1px solid rgba(225, 29, 72, 0.22);
+  color: var(--rose-deep);
+  background: rgba(255, 255, 255, 0.8);
+}
+.button.ghost {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--pink);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chip {
+  padding: 5px 10px;
+  border: 1px solid rgba(225, 29, 72, 0.16);
+  border-radius: 999px;
+  color: var(--rose-deep);
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 확인되지 않은 내용 표시 */
+.todo {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px dashed #d97706;
+  border-radius: 8px;
+  color: #92400e;
+  background: #fffbeb;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.todoTag {
+  padding: 0 5px;
+  border-radius: 4px;
+  color: var(--white);
+  background: #d97706;
+  font-family: var(--font-mono-stack);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ==========================================================
+   내비게이션
+   ========================================================== */
+.navWrap {
+  position: fixed;
+  top: 14px;
+  right: 0;
+  left: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(1180px, calc(100% - 24px));
+  padding: 6px 6px 6px 18px;
+  border-radius: 999px;
+  pointer-events: auto;
+  transform-origin: top center;
+  transition: transform 0.4s var(--ease-out);
+}
+.navWrap.isCompact .nav {
+  transform: translateY(-6px) scale(0.97);
+}
+.brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.brandDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose), var(--purple));
+}
+.brandRole {
+  color: var(--muted);
+  font-family: var(--font-mono-stack);
+  font-size: 12px;
+  font-weight: 400;
+}
+.navLinks {
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+.navLinks::-webkit-scrollbar {
+  display: none;
+}
+.navLinks a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.navLinks a:hover,
+.navLinks a[aria-current="true"] {
+  color: var(--ink);
+}
+.navActive {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(249, 168, 212, 0.32);
+}
+.navLabel {
+  position: relative;
+}
+
+/* ==========================================================
+   Hero
+   ========================================================== */
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 100svh;
+  padding: clamp(120px, 16vh, 168px) 0 72px;
+}
+.heroAurora {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+/* 오로라: blur 필터 대신 투명으로 사라지는 radial-gradient를 써서 렌더링 비용을 줄였다.
+   움직임은 transform만 쓴다. Hero 안에만 두어 아래 글래스 카드가 매 프레임 다시 blur되지 않게 했다. */
+.aurora {
+  position: absolute;
+  width: 62vmax;
+  height: 62vmax;
+  border-radius: 50%;
+  will-change: transform;
+  animation: auroraDrift 18s ease-in-out infinite alternate;
+}
+.auroraPink {
+  top: -28vmax;
+  left: -18vmax;
+  background: radial-gradient(circle, rgba(249, 168, 212, 0.75), transparent 62%);
+}
+.auroraPurple {
+  bottom: -34vmax;
+  left: 22%;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.5), transparent 62%);
+  animation-duration: 24s;
+  animation-delay: -6s;
+}
+.auroraBlue {
+  top: -20vmax;
+  right: -24vmax;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.5), transparent 62%);
+  animation-duration: 21s;
+  animation-delay: -3s;
+}
+.spotlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.13), rgba(167, 139, 250, 0.1) 38%, transparent 68%);
+}
+
+.heroInner {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rose);
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.15);
+}
+.heroTitle {
+  max-width: 1100px;
+  margin: 0 0 28px;
+  font-size: clamp(40px, 7.2vw, 100px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.heroLine {
+  display: block;
+}
+.accentLine {
+  color: var(--rose);
+}
+/* 단어가 아래에서 올라오며 보이도록 어절마다 가리개를 둔다 */
+.wordMask {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  vertical-align: bottom;
+}
+.word {
+  display: inline-block;
+}
+.heroIntro {
+  max-width: 640px;
+  margin-bottom: 32px;
+  color: var(--muted);
+  font-size: clamp(16px, 1.5vw, 19px);
+  line-height: 1.75;
+}
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.heroStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: clamp(48px, 7vw, 80px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.statCard {
+  display: grid;
+  gap: 6px;
+  padding: 22px 24px;
+  border-radius: var(--radius-md);
+}
+.statValue {
+  color: var(--ink);
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.statLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+.statNote {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ==========================================================
+   프로젝트 벤토 그리드
+   ========================================================== */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  gap: 18px;
+}
+.bentoCard {
+  grid-column: span 5;
+  min-width: 0;
+}
+.bentoCard.isFeatured {
+  grid-column: span 7;
+  grid-row: span 2;
+}
+.bentoCard.isOpen {
+  grid-column: 1 / -1;
+  grid-row: auto;
+}
+.cardSurface {
+  height: 100%;
+  padding: clamp(20px, 2.4vw, 30px);
+  border-radius: var(--radius-lg);
+}
+.cardGlow {
+  position: absolute;
+  inset: -1px;
+  z-index: 2;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--rose), var(--purple), var(--blue));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-out);
+}
+.cardSurface:hover .cardGlow,
+.cardSurface:focus-within .cardGlow,
+.bentoCard.isOpen .cardGlow {
+  opacity: 0.85;
+}
+.cardFace {
+  display: grid;
+  gap: 22px;
+  align-content: start;
+}
+.bentoCard.isOpen .cardFace {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: start;
+}
+.bentoCard.isOpen .detailToggle {
+  grid-column: 1 / -1;
+}
+.cardMeta {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.cardTitle {
+  margin-bottom: 6px;
+  font-size: clamp(28px, 3.2vw, 44px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.cardTagline {
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.headlineMetric {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 18px;
+}
+.headlineMetric strong {
+  color: var(--rose);
+  font-size: clamp(28px, 3.4vw, 46px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.headlineMetric span {
+  font-size: 14px;
+  font-weight: 600;
+}
+.headlineMetric small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.cardMedia img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px -24px rgba(21, 19, 26, 0.35);
+}
+.mediaPlaceholder {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  aspect-ratio: 16 / 9;
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(249, 168, 212, 0.4), rgba(167, 139, 250, 0.28), rgba(96, 165, 250, 0.28));
+  text-align: center;
+}
+.mediaPlaceholder .display {
+  color: rgba(21, 19, 26, 0.7);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 700;
+}
+.detailToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 8px 0 18px;
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  border-radius: 999px;
+  color: var(--rose-deep);
+  background: var(--white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.toggleIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--rose);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.35s var(--ease-out);
+}
+.toggleIcon.isOpen {
+  transform: rotate(45deg);
+}
+
+/* 펼쳐진 상세 */
+.detailWrap {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 40px;
+}
+.detailBlock p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+.detailStep {
+  margin: 0 0 14px;
+  color: var(--rose-deep);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.bulletList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bulletList li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+.bulletList li::before {
+  position: absolute;
+  top: 0.62em;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  content: "";
+  background: linear-gradient(135deg, var(--rose), var(--purple));
+}
+.archFlow {
+  margin: 18px 0 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.65);
+}
+.archFlow figcaption {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.archFlow ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.archFlow li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+.archNode {
+  padding: 5px 10px;
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  border-radius: 10px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+}
+.archEdge {
+  color: var(--muted);
+  font-size: 12px;
+}
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.metric {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+}
+.metric strong {
+  color: var(--rose);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.metric span {
+  font-size: 14px;
+  font-weight: 600;
+}
+.metric small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.gateBox {
+  margin-top: 16px;
+  padding: 18px;
+  overflow-x: auto;
+  border: 1px solid rgba(225, 29, 72, 0.2);
+  border-radius: 18px;
+  background: rgba(255, 241, 246, 0.7);
+}
+.gateHead p {
+  margin: 10px 0 12px;
+  font-size: 14px;
+}
+.verdict {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--white);
+  background: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.gateTable {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.gateTable th,
+.gateTable td {
+  padding: 9px 8px;
+  border-bottom: 1px solid rgba(225, 29, 72, 0.12);
+  text-align: left;
+  vertical-align: top;
+}
+.gateTable thead th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.gatePill {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.gatePill.pass {
+  color: #166534;
+  background: #dcfce7;
+}
+.gatePill.fail {
+  color: var(--rose-deep);
+  background: #ffe4e6;
+}
+.gatePill.pending {
+  color: #475569;
+  background: #f1f5f9;
+}
+.honesty {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--purple);
+  border-radius: 0 14px 14px 0;
+  background: rgba(237, 233, 254, 0.5);
+}
+.honesty > span {
+  display: block;
+  margin-bottom: 10px;
+  color: #6d28d9;
+  font-size: 12px;
+  font-weight: 600;
+}
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.linkRow li {
+  display: grid;
+  gap: 4px;
+}
+.linkChip {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--white);
+  background: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+.linkChip:hover {
+  background: var(--rose);
+}
+.linkNote {
+  max-width: 260px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ==========================================================
+   이스트캠프 · TIL
+   ========================================================== */
+.campGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(32px, 5vw, 56px);
+  align-items: start;
+}
+.timelineWrap {
+  position: relative;
+  padding-left: 30px;
+}
+.timelineTrack,
+.timelineFill {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 7px;
+  width: 2px;
+  border-radius: 2px;
+}
+.timelineTrack {
+  background: rgba(21, 19, 26, 0.08);
+}
+.timelineFill {
+  background: linear-gradient(var(--pink), var(--rose), var(--purple));
+  transform-origin: top;
+}
+.timeline {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.timelineItem {
+  position: relative;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+}
+.timelineDot {
+  position: absolute;
+  top: 24px;
+  left: -29px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--rose);
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(249, 168, 212, 0.35);
+}
+.timelineWhen {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.timelineItem h4 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.timelineDetail {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.evidence {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: rgba(96, 165, 250, 0.14);
+  font-size: 11px;
+}
+.campSide {
+  min-width: 0;
+  display: grid;
+  gap: 44px;
+}
+.campSide > *,
+.heatmapCard {
+  min-width: 0;
+}
+.awardList {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.awardCard {
+  display: grid;
+  gap: 8px;
+  padding: 20px 22px;
+  border-radius: var(--radius-md);
+}
+.awardPrize {
+  justify-self: start;
+  padding: 3px 12px;
+  border-radius: 999px;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--rose), #be185d);
+  font-size: 13px;
+  font-weight: 700;
+}
+.awardCard strong {
+  font-size: 17px;
+  line-height: 1.45;
+}
+.awardCard small {
+  color: var(--muted);
+}
+.tilMessage {
+  margin-bottom: 10px;
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 800;
+  line-height: 1.25;
+}
+.tilSub {
+  margin-bottom: 18px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.tilStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.tilStats li {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+}
+.tilStats span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.tilStats strong {
+  font-size: 15px;
+}
+.heatmapCard {
+  padding: 18px;
+  border-radius: var(--radius-md);
+}
+.heatmapHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.heatmapScroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.heatmap {
+  display: flex;
+  gap: 4px;
+  width: max-content;
+}
+.heatCol {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  gap: 4px;
+}
+.heatCell {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: rgba(21, 19, 26, 0.07);
+}
+.heatmap .heatCell {
+  opacity: 0;
+  transform: scale(0.5);
+}
+/* 화면에 들어오면 열(주) 순서대로 셀이 켜진다. 지연 시간은 컴포넌트에서 열마다 준다 */
+.heatmap.isVisible .heatCell {
+  animation: cellOn 0.45s var(--ease-out) forwards;
+}
+.heatCell.isWritten {
+  background: linear-gradient(135deg, var(--rose), var(--pink));
+}
+.heatLegend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.tilLink {
+  margin-top: 18px;
+}
+
+/* ==========================================================
+   기술 스택 마키
+   ========================================================== */
+.marqueeSection {
+  overflow: hidden;
+  padding: 26px 0;
+  border-block: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.55);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 46s linear infinite;
+}
+.marqueeSection:hover .marquee {
+  animation-play-state: paused;
+}
+.marqueeTrack {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 0 12px 0 0;
+  list-style: none;
+}
+.marqueeItem {
+  padding: 10px 20px;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 999px;
+  background: var(--white);
+  font-family: var(--font-display-stack);
+  font-size: clamp(17px, 2vw, 24px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.marqueeItem:nth-child(3n) {
+  color: var(--rose);
+}
+
+/* ==========================================================
+   About · Contact
+   ========================================================== */
+.aboutGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(32px, 5vw, 56px);
+  align-items: start;
+}
+.aboutGrid .sectionHead {
+  margin-bottom: 0;
+}
+.factGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.factCard {
+  padding: 20px 22px;
+  border-radius: var(--radius-md);
+}
+.factCard > span {
+  color: var(--rose-deep);
+  font-size: 12px;
+  font-weight: 600;
+}
+.factCard ul {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
+}
+.contactCard {
+  padding: clamp(28px, 6vw, 72px);
+  border-radius: 32px;
+  text-align: center;
+}
+.contactCard .eyebrow {
+  justify-content: center;
+}
+.contactCard h2 {
+  max-width: 760px;
+  margin-right: auto;
+  margin-left: auto;
+}
+.contactLinks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 760px;
+  margin: 32px auto 0;
+  text-align: left;
+}
+.contactItem {
+  display: grid;
+  gap: 6px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--white);
+  transition: transform 0.25s var(--ease-out);
+}
+.contactItem:hover {
+  transform: translateY(-2px);
+}
+.contactItem span {
+  color: var(--rose-deep);
+  font-size: 12px;
+}
+.contactItem strong {
+  overflow-wrap: anywhere;
+}
+.footer {
+  margin-top: 40px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ==========================================================
+   키프레임 (전부 transform·opacity만 사용)
+   ========================================================== */
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6vw, 4vh, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(-4vw, 7vh, 0) scale(0.95);
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes cellOn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================
+   반응형
+   ========================================================== */
+@media (max-width: 900px) {
+  .bentoCard,
+  .bentoCard.isFeatured,
+  .bentoCard.isOpen {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+  /* 1fr이 아니라 minmax(0, 1fr): 1fr은 내용의 최소 폭(예: 히트맵)보다 좁아지지 않아 화면을 밀어낸다 */
+  .bentoCard.isOpen .cardFace,
+  .detail,
+  .campGrid,
+  .aboutGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .heroStats,
+  .tilStats,
+  .factGrid,
+  .contactLinks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .heroActions .button {
+    flex: 1 1 100%;
+  }
+  .brandRole {
+    display: none;
+  }
+  .nav {
+    padding: 5px 5px 5px 14px;
+  }
+  .navLinks a {
+    padding: 0 10px;
+    font-size: 13px;
+  }
+}
+
+/* ==========================================================
+   동작 줄이기: 큰 모션을 모두 끄고 정적인 화면으로 보여 준다
+   (motion 컴포넌트는 MotionProvider의 MotionConfig가 따로 처리한다)
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .aurora {
+    animation: none;
+  }
+  .marquee {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+    animation: none;
+  }
+  .marqueeSection {
+    mask-image: none;
+  }
+  .marqueeTrack {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 16px;
+  }
+  .marqueeTrack[aria-hidden] {
+    display: none;
+  }
+  .heatmap .heatCell {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+  .button,
+  .nav,
+  .contactItem,
+  .toggleIcon,
+  .cardGlow {
+    transition: none;
+  }
+  .button:hover,
+  .contactItem:hover {
+    transform: none;
+  }
+}
